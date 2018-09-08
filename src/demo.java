@@ -47,16 +47,15 @@ public class demo {
         ArrayList<Token> tokensTable = new ArrayList<Token>();
         int position = 0;
         String id  = "";
+        char newLineFlag;
         
         while (data != -1) {
             //System.out.println("INICIAL: " + data);
             char ch = (char) data;
+            newLineFlag = ch;
             System.out.println("¡¡¡¡NEW TERM!!!!");
-            if(ch == ";".charAt(0)){
-                line++;
-                tokenPosition = 0;
-            }
-            if(Character.isWhitespace(ch) == false && isSignosDePuntuacion(ch)== false){
+            
+            if(Character.isWhitespace(ch) == false){
                 tokenPosition++;
             }
             
@@ -214,7 +213,11 @@ public class demo {
                 }else{
                     System.out.println("Error at character " + errorPosition );
                 }
-            }else if (isOperador(ch)){
+            }
+            
+            //_____________________Signo de puntuacion__________________________
+            else if (isSignosDePuntuacion(ch)){
+                
                 
                 String word = "";
                 word += ch;
@@ -224,11 +227,10 @@ public class demo {
                     position ++;
                     if(data == -1){break;}
                     ch = (char)data;
-                    
-                    if(isSignosDePuntuacion(ch)){
-                        word += ch;
-                        id = "OPERADOR " + tipoDeOperador(ch);
-                    }
+                   
+                    word += ch;
+                    id = "SIGNO";
+                   
 
                 }
                 
@@ -254,6 +256,11 @@ public class demo {
 
             
             data = inputStreamReader.read();
+            
+            if(newLineFlag == ";".charAt(0)){
+                line++;
+                tokenPosition = 0;
+            }
         }
         
         
