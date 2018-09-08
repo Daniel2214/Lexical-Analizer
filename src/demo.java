@@ -25,8 +25,13 @@ public class demo {
         ArrayList<Token> tokenTable = analize(inputStreamReader);
         
         
+        System.out.println("___________________________________________________________________");
+        System.out.println("");
+        System.out.println("| TOKEN TABLE |");
+        System.out.println("");
         for(int i=0; i<tokenTable.size(); i++){
-            System.out.println("ID: " + tokenTable.get(i).getId()+ " | " + "Value: " + tokenTable.get(i).getValue()+" | Line: "+tokenTable.get(i).getLineNum() + " | Inline position:" + tokenTable.get(i).getStartChar());
+            
+            System.out.println("| ID: " + tokenTable.get(i).getId()+ " | " + "Value: " + tokenTable.get(i).getValue()+" | Line: "+tokenTable.get(i).getLineNum() + " | Inline position:" + tokenTable.get(i).getStartChar());
         }
         
     }
@@ -46,7 +51,7 @@ public class demo {
         while (data != -1) {
             //System.out.println("INICIAL: " + data);
             char ch = (char) data;
-            System.out.println("New term");
+            System.out.println("¡¡¡¡NEW TERM!!!!");
             if(ch == ";".charAt(0)){
                 line++;
                 tokenPosition = 0;
@@ -68,6 +73,7 @@ public class demo {
                 String num = "";
                 num += ch;
                 id = "ENTERO";
+                int errorAt=0;
                 
                 while (Character.isWhitespace(ch) == false) {
                     data = inputStreamReader.read();
@@ -83,6 +89,7 @@ public class demo {
                             
                             if((ch == ".".charAt(0))&& singlePoint == true){
                                 id = "REAL";
+                                errorAt = position+1;
                                 while (Character.isWhitespace(ch) == false) {
                                     //state = "ERROR";
                                     id = "ENTERO";
@@ -91,7 +98,8 @@ public class demo {
                                     data = inputStreamReader.read();
                                     position ++ ;
                                     ch = (char) data;
-                                    //System.out.println("Error at character: " + position);
+                                    System.out.println("Error at character: " + errorAt);
+                                    if(data == -1){break;}
                                     
                                 }
                                 tokenError = true;
@@ -109,7 +117,8 @@ public class demo {
                             num += ch;
                             tokenError=false;
                         } else {
-                            
+                            errorAt = position+1;
+                            System.out.println("Error at character: " + errorAt);
                             while (Character.isWhitespace(ch) == false) {
                                 state = "ERROR";
                                 id = "ENTERO";
@@ -118,7 +127,8 @@ public class demo {
                                 data = inputStreamReader.read();
                                 position++;
                                 ch = (char) data;
-                                System.out.println("Error at character: " + position);
+                                if(data == -1){break;}
+                                
                             }
                             tokenError = true;
                             break;
@@ -131,7 +141,7 @@ public class demo {
                     state= "ERROR";
                     id="ENTERO";
                     System.out.println(state);
-                    System.out.println("Error at character: " + position);
+                    System.out.println("Error at character: " + errorAt);
                 }
                 
                 
@@ -154,31 +164,75 @@ public class demo {
                 String word = "";
                 word += ch;
                 id = "IDENTIFICADOR";
+                boolean isPalabraRes =false;
+                boolean error = false;
+                int errorPosition = 0;
                 
-                boolean isPalabraRes;
                 while(Character.isWhitespace(ch)==false){
                     data = inputStreamReader.read();
                     position ++;
                     if(data == -1){break;}
                     ch = (char)data;
-                    if(Character.isLetter(ch) || Character.isDigit(ch)){
-                        word += ch;
-                        if(Character.isDigit(ch)==false){
-                            isPalabraRes = isPalabraReservada(word);
-                            System.out.println(isPalabraRes);
+                    if(Character.isWhitespace(ch) == false){
+                        if(Character.isLetter(ch) || Character.isDigit(ch)){
+                            word += ch;
+                            if(Character.isDigit(ch)==false){
+                                isPalabraRes = isPalabraReservada(word);
+                                System.out.println(isPalabraRes);
+                            }
+                            error = false;
+                        }else{
+
+                            errorPosition = position+1;
+                            while (Character.isWhitespace(ch) == false) {
+
+                                    data = inputStreamReader.read();
+                                    position++;
+                                    ch = (char) data;
+                                    System.out.println(data);
+                                    if(data == -1){break;}
+                            }
+
+                            error = true;
+                            break;
                         }
                     }
                     
-                    
-                    if(isPalabraReservada(word)){
+                    if(isPalabraRes){
                         id = "PALABRA RESERVADA";
                         
                     }
                     
                     
-                    
+                    System.out.println(error);
                 
                 }
+                
+                if(error == false){
+                    token = new Token(id, word, line, tokenPosition);
+                    tokensTable.add(token);
+                }else{
+                    System.out.println("Error at character " + errorPosition );
+                }
+            }else if (isOperador(ch)){
+                
+                String word = "";
+                word += ch;
+                
+                while(Character.isWhitespace(ch)==false){
+                    data = inputStreamReader.read();
+                    position ++;
+                    if(data == -1){break;}
+                    ch = (char)data;
+                    
+                    if(isSignosDePuntuacion(ch)){
+                        word += ch;
+                        id = "OPERADOR " + tipoDeOperador(ch);
+                    }
+
+                }
+                
+                
                 
                 token = new Token(id, word, line, tokenPosition);
                 tokensTable.add(token);
@@ -186,9 +240,23 @@ public class demo {
             
             
             
-            data = inputStreamReader.read();
+            //______________Empieza con punto___________________________________
+            if(ch == ".".charAt(0)){
+                
+                while(Character.isWhitespace(ch)==false){
+                    data = inputStreamReader.read();
+                    position ++;
+                    if(data == -1){break;}
+                    ch = (char)data;
+                }
+          
+            }
+
             
+            data = inputStreamReader.read();
         }
+        
+        
         return tokensTable;
     }
     
@@ -233,6 +301,53 @@ public class demo {
             return true;
                
         return false;
+    }
+    
+    public static boolean isOperador(char word){
+        
+        if(word == "+".charAt(0))
+            return true;
+        else if(word == "-".charAt(0))
+            return true;
+        else if(word == "*".charAt(0))
+            return true;
+        else if(word == "/".charAt(0))
+            return true;
+        else if(word == ">".charAt(0))
+            return true;
+        else if(word == "<".charAt(0))
+            return true;
+        else if(word == "==".charAt(0))
+            return true;
+        else if(word == "&".charAt(0))
+            return true;
+        else if(word == "|".charAt(0))
+            return true;
+        else if(word == "!".charAt(0))
+            return true;
+        else if(word == "=".charAt(0))
+            return true;
+    
+        return false;
+    }
+    
+    public static String tipoDeOperador(char word){
+    
+        if(word == "+".charAt(0) || word == "-".charAt(0) || word == "*".charAt(0) || word == "/".charAt(0)){
+            return "ARITMETICO";
+        }
+        else if(word == ">".charAt(0) || word == "<".charAt(0) || word == "==".charAt(0)){
+            return "RELACIONAL";
+        }
+        else if(word == "&".charAt(0) || word == "|".charAt(0) || word == "!".charAt(0)){
+            return "LOGICO";
+        }
+        else if(word == "=".charAt(0)){
+            return "ASIGNACION";
+        }
+        
+        return "";
+    
     }
 
 }
