@@ -222,23 +222,61 @@ public class demo {
                 String word = "";
                 word += ch;
                 
-                while(Character.isWhitespace(ch)==false){
-                    data = inputStreamReader.read();
-                    position ++;
-                    if(data == -1){break;}
-                    ch = (char)data;
-                   
-                    word += ch;
-                    id = "SIGNO";
-                   
-
-                }
+//                while(Character.isWhitespace(ch)==false){
+//                    data = inputStreamReader.read();
+//                    position ++;
+//                    if(data == -1){break;}
+//                    ch = (char)data;
+//                   
+//                    word += ch;
+//                    id = "SIGNO";
+//                   
+//
+//                }
                 
-                
+                id = "SIGNO";
                 
                 token = new Token(id, word, line, tokenPosition);
                 tokensTable.add(token);
             }
+            
+            
+            //_____________Operador_____________________________________________
+            
+            else if (isOperador(ch)){
+                
+                id = "Operador ";
+                String extra = "";
+                String word = "";
+                word += ch;
+                
+                extra = tipoDeOperador(word);
+                
+                while(Character.isWhitespace(ch)==false){
+                    data = inputStreamReader.read();
+                    position++;
+                    if(data == -1){break;}
+                    ch = (char) data;
+                    
+                    if(Character.isWhitespace(ch) == false){
+                        word+=ch;
+                        System.out.println(word);
+                        extra = tipoDeOperador(word);
+                        System.out.println("Yolo" + extra);
+                    }
+                }
+                
+                id += extra;
+                
+                System.out.println(id);
+                
+                token = new Token(id, word, line, tokenPosition);
+                tokensTable.add(token);
+            }
+          
+            
+            
+            
             
             
             
@@ -320,11 +358,13 @@ public class demo {
             return true;
         else if(word == "/".charAt(0))
             return true;
+        else if(word == "^".charAt(0))
+            return true;
         else if(word == ">".charAt(0))
             return true;
         else if(word == "<".charAt(0))
             return true;
-        else if(word == "==".charAt(0))
+        else if(word == "=".charAt(0))
             return true;
         else if(word == "&".charAt(0))
             return true;
@@ -332,24 +372,24 @@ public class demo {
             return true;
         else if(word == "!".charAt(0))
             return true;
-        else if(word == "=".charAt(0))
-            return true;
-    
         return false;
     }
     
-    public static String tipoDeOperador(char word){
+    public static String tipoDeOperador(String word){
+        
+        System.out.println("ejejejejejej");
     
-        if(word == "+".charAt(0) || word == "-".charAt(0) || word == "*".charAt(0) || word == "/".charAt(0)){
+        if(word.equals("+") || word.equals("-") || word.equals("*") || word.equals("/")){
             return "ARITMETICO";
         }
-        else if(word == ">".charAt(0) || word == "<".charAt(0) || word == "==".charAt(0)){
+        else if(word.equals(">") || word.equals("<") || word.equals("==")){
+            System.out.println("holi");
             return "RELACIONAL";
         }
-        else if(word == "&".charAt(0) || word == "|".charAt(0) || word == "!".charAt(0)){
+        else if(word.equals("&") || word.equals("|") || word.equals("!")){
             return "LOGICO";
         }
-        else if(word == "=".charAt(0)){
+        else if(word.equals("=")){
             return "ASIGNACION";
         }
         
