@@ -19,21 +19,21 @@ import java.util.ArrayList;
 public class demo {
 
     public static void main(String[] args) throws FileNotFoundException, IOException {
-        InputStream inputStream = new FileInputStream("C:/Users/dan_1/Desktop/code.txt");
-        Reader inputStreamReader = new InputStreamReader(inputStream);
-
-        ArrayList<Token> tokenTable = analize(inputStreamReader);
-        
-        
-        System.out.println("___________________________________________________________________");
-        System.out.println("");
-        System.out.println("| TOKEN TABLE |");
-        System.out.println("");
-        for(int i=0; i<tokenTable.size(); i++){
-            
-            System.out.println("| ID: " + tokenTable.get(i).getId()+ " | " + "Value: " + tokenTable.get(i).getValue()+" | Line: "+tokenTable.get(i).getLineNum() + " | Inline position:" + tokenTable.get(i).getStartChar());
-        }
-        
+//        InputStream inputStream = new FileInputStream("C:/Users/dan_1/Desktop/code.txt");
+//        Reader inputStreamReader = new InputStreamReader(inputStream);
+//
+//        ArrayList<Token> tokenTable = analize(inputStreamReader);
+//        
+//        
+//        System.out.println("___________________________________________________________________");
+//        System.out.println("");
+//        System.out.println("| TOKEN TABLE |");
+//        System.out.println("");
+//        for(int i=0; i<tokenTable.size(); i++){
+//            
+//            System.out.println("| ID: " + tokenTable.get(i).getId()+ " | " + "Value: " + tokenTable.get(i).getValue()+" | Line: "+tokenTable.get(i).getLineNum() + " | Inline position:" + tokenTable.get(i).getStartChar());
+//        }
+//        
     }
 
     public static ArrayList<Token> analize(Reader inputStreamReader) throws IOException {
@@ -295,7 +295,7 @@ public class demo {
             
             data = inputStreamReader.read();
             
-            if(newLineFlag == ";".charAt(0)){
+            if(newLineFlag == ";".charAt(0) || newLineFlag == "{".charAt(0) || newLineFlag == "}".charAt(0)){
                 line++;
                 tokenPosition = 0;
             }
@@ -377,7 +377,7 @@ public class demo {
     
     public static String tipoDeOperador(String word){
         
-        System.out.println("ejejejejejej");
+        
     
         if(word.equals("+") || word.equals("-") || word.equals("*") || word.equals("/")){
             return "ARITMETICO";
