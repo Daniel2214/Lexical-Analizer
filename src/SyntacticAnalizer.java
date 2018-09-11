@@ -23,7 +23,7 @@ public class SyntacticAnalizer {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         demo tokensTable = new demo();
         
-        InputStream inputStream = new FileInputStream("C:/Users/DANIELALEJANDROJIMEN/Desktop/code.txt");
+        InputStream inputStream = new FileInputStream("C:/Users/dan_1/Desktop/code.txt");
         Reader inputStreamReader = new InputStreamReader(inputStream);
 
         ArrayList<Token> tokenTable = demo.analize(inputStreamReader);
@@ -53,6 +53,8 @@ public class SyntacticAnalizer {
     
         int line;
         boolean mainAppears = false;
+        boolean declarationExist = false;
+        boolean declarationError = false;
         for(int i=0; i<tokensTable.size(); i++){
         
            line = tokensTable.get(i).getLineNum();
@@ -68,6 +70,7 @@ public class SyntacticAnalizer {
             if(tokensTable.get(i).getId() == "PALABRA RESERVADA"){
 
                 ArrayList<Token> intermediario = new ArrayList();
+                ArrayList<Token> posDeclaraciones = new ArrayList();
 
                 System.out.println("Value is: " + tokensTable.get(i).getValue());
 
@@ -101,16 +104,55 @@ public class SyntacticAnalizer {
                             if(mainAppears == false){
                                 System.out.println("todo chill con la funcion");
                                 System.out.println(" i is" + i);
+                                
+                                //Revisar declaraciones
                                 while (tokensTable.get(i).getValue().equals("entero") || tokensTable.get(i).getValue().equals("real") || tokensTable.get(i).getValue().equals("logico")){
                                     line ++;
                                     while(tokensTable.get(i).getLineNum() == line){
-                                        System.out.println("WHILE " + tokensTable.get(i).getValue());
-                                        System.out.println("DANIEEEEEEEL");
+                                        posDeclaraciones.add(tokensTable.get(i));
                                         i++;
                                     }
-                                    
+                                     if(isDeclaracion(posDeclaraciones)){
+                                         System.out.println("Declaración correcta");
+                                         declarationExist = true;
+                                     }else{
+                                         System.out.println("Error en declaracion en la linea " + line + ", en el caracter " + (i-1) );
+                                     }
+                                     posDeclaraciones.clear();
                                 }
-                                i--;
+                               
+                                
+                                System.out.println(" i al terminar declaracion es " + i);
+                                
+                                
+                                //Revisar asignaciones
+                                while (tokensTable.get(i).getId().equals("IDENTIFICADOR")){
+                                    if(declarationExist == false){
+                                        declarationError = true;
+                                        System.out.println("Error: asignacion antes de declarar en la linea " + line + ", en el caracter " + (i-1));
+                                        while(tokensTable.get(i).getLineNum() == line){
+                                            System.out.println("popo ");
+                                            i++;
+                                        }
+                                        i--;
+                                    }else{
+                                        line ++;
+                                        System.out.println("HADOUKEN!!!");
+                                        while(tokensTable.get(i).getLineNum() == line){
+                                            System.out.println("papaya " + tokensTable.get(i).getValue());
+                                            i++;
+                                        }
+                                        
+                                    } 
+                                }
+                                if(declarationError == false){
+                                    i--;
+                                }
+                                
+                                
+                                
+                                
+                               
                             }else{
                                 System.out.println("Error, function is declared after main. Line: " + line + ", Character: " + i);
                             }
@@ -125,6 +167,8 @@ public class SyntacticAnalizer {
 
                 
             }
+            declarationExist = false;
+            declarationError = false;
         }
     }
 
@@ -201,6 +245,20 @@ public class SyntacticAnalizer {
     private static void isAsignacion(ArrayList<Token> tokensTable, int line, int i) {
         
 
+    }
+
+    private static boolean isDeclaracion(ArrayList<Token> posDeclaraciones) {
+        System.out.println("Hello");
+        
+        if(posDeclaraciones.size()>=1){
+            System.out.println("Size: " + posDeclaraciones.size());
+            if(posDeclaraciones.get(0).getValue().equals("entero") || posDeclaraciones.get(0).getValue().equals("real")  || posDeclaraciones.get(0).getValue().equals("logico")){
+                if(posDeclaraciones.get(1).getId().equals("IDENTIFICADOR")){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }
