@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Stack;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -58,19 +59,20 @@ public class SyntacticAnalizer {
         for(int i=0; i<tokensTable.size(); i++){
         
            line = tokensTable.get(i).getLineNum();
-           System.out.println();
-           System.out.println(line);
+//           System.out.println();
+//           System.out.println(line);
            
            
            
           
             System.out.println("");
-            System.out.println("TERM");
-            System.out.println(tokensTable.get(i).getValue());
+            //System.out.println("TERM");
+            //System.out.println(tokensTable.get(i).getValue());
             if(tokensTable.get(i).getId() == "PALABRA RESERVADA"){
 
                 ArrayList<Token> intermediario = new ArrayList();
                 ArrayList<Token> posDeclaraciones = new ArrayList();
+                ArrayList<Token> posAsignacion = new ArrayList();
 
                 System.out.println("Value is: " + tokensTable.get(i).getValue());
 
@@ -78,9 +80,11 @@ public class SyntacticAnalizer {
 
                     if(mainAppears == false ){
                         mainAppears = true;
+                    }else{
+                        System.out.println("Error en la linea " + line + ", principal ya se había declarado");
                     }
 
-                    System.out.println("paps");
+                    
                 }else if (tokensTable.get(i).getValue().equals("entero") || tokensTable.get(i).getValue().equals("real") || tokensTable.get(i).getValue().equals("logico")){
 
                     int size = 0;
@@ -91,8 +95,8 @@ public class SyntacticAnalizer {
                         i++;
                     }
                     //i--;
-                    System.out.println("i is: " + i);
-                    System.out.println("Size is: " + size);
+//                    System.out.println("i is: " + i);
+//                    System.out.println("Size is: " + size);
 
                     if(size<=3){
                         System.out.println("Podria ser una declaracion");
@@ -102,9 +106,9 @@ public class SyntacticAnalizer {
                         if(isFuncion(intermediario)){
 
                             if(mainAppears == false){
-                                System.out.println("todo chill con la funcion");
-                                System.out.println(" i is" + i);
-                                
+//                                System.out.println("todo chill con la funcion");
+//                                System.out.println(" i is" + i);
+//                                
                                 //Revisar declaraciones
                                 while (tokensTable.get(i).getValue().equals("entero") || tokensTable.get(i).getValue().equals("real") || tokensTable.get(i).getValue().equals("logico")){
                                     line ++;
@@ -112,38 +116,44 @@ public class SyntacticAnalizer {
                                         posDeclaraciones.add(tokensTable.get(i));
                                         i++;
                                     }
-                                     if(isDeclaracion(posDeclaraciones)){
+                                    if(isDeclaracion(posDeclaraciones)){
                                          System.out.println("Declaración correcta");
                                          declarationExist = true;
-                                     }else{
-                                         System.out.println("Error en declaracion en la linea " + line + ", en el caracter " + (i-1) );
-                                     }
-                                     posDeclaraciones.clear();
+                                    }else{
+                                         System.out.println("Error en declaracion en la linea " + line + ", en el termino " + (i-1) );
+                                    }
+                                    posDeclaraciones.clear();
                                 }
                                
                                 
-                                System.out.println(" i al terminar declaracion es " + i);
+ //                               System.out.println(" i al terminar declaracion es " + i);
                                 
                                 
                                 //Revisar asignaciones
                                 while (tokensTable.get(i).getId().equals("IDENTIFICADOR")){
                                     if(declarationExist == false){
                                         declarationError = true;
-                                        System.out.println("Error: asignacion antes de declarar en la linea " + line + ", en el caracter " + (i-1));
+                                        System.out.println("Error: asignacion antes de declarar en la linea " + line + ", en el termino " + (i-1));
                                         while(tokensTable.get(i).getLineNum() == line){
-                                            System.out.println("popo ");
                                             i++;
                                         }
                                         i--;
                                     }else{
                                         line ++;
-                                        System.out.println("HADOUKEN!!!");
+                                        //System.out.println("HADOUKEN!!!");
                                         while(tokensTable.get(i).getLineNum() == line){
-                                            System.out.println("papaya " + tokensTable.get(i).getValue());
+                                            posAsignacion.add(tokensTable.get(i));
                                             i++;
                                         }
                                         
-                                    } 
+                                        if(isAsignacion(posAsignacion)){
+                                            System.out.println("ASIGNACION!!!");
+                                        }else{
+                                            System.out.println("Error en linea " + line + ", termino " + i);
+                                        }
+                                        
+                                    }
+                                    posAsignacion.clear();
                                 }
                                 if(declarationError == false){
                                     i--;
@@ -160,12 +170,11 @@ public class SyntacticAnalizer {
                     }
                 }
 
-                System.out.println("GEEDGFDSFGFS");
-            }else if (tokensTable.get(i).getId() == "IDENTIFICADOR"){
-               
+                System.out.println("end");
+                
             }else{
 
-                
+                //System.out.println("Error en la linea " + line + ", termino " + i);  
             }
             declarationExist = false;
             declarationError = false;
@@ -211,10 +220,10 @@ public class SyntacticAnalizer {
         
         
         for(int i=0; i< params.size(); i++){
-            System.out.println((params.get(i)));
+            //System.out.println((params.get(i)));
             if(i%3 == 0){
                 
-                System.out.println(params.get(i));
+                //System.out.println(params.get(i));
                 if(params.get(i).equals("PALABRA RESERVADA")){
                     tipoDeDatoConVariable = true;
                     terms++;
@@ -242,16 +251,44 @@ public class SyntacticAnalizer {
         return true;
     }
 
-    private static void isAsignacion(ArrayList<Token> tokensTable, int line, int i) {
+    private static boolean isAsignacion(ArrayList<Token> posAsignaciones) {
+       
+        boolean parentesisAlreadyChecked = false;
+        if(posAsignaciones.size()>=1){
+            if(posAsignaciones.get(0).getId().equals("IDENTIFICADOR") && posAsignaciones.get(1).getValue().equals("=")){
+                for(int i = 2; i<posAsignaciones.size(); i++){
+                    if(!posAsignaciones.get(i).getValue().equals("=")){
+                        if(posAsignaciones.get(i).getValue().equals("(") && parentesisAlreadyChecked == false){
+                            parentesisAlreadyChecked = true;
+                            if(parantesisBalanceados(posAsignaciones)){
+                                System.out.println("parentesis balanceados");
+                                if(goodOperators(posAsignaciones)){
+                                    return true;
+                                }
+                                return false;
+                            }else{
+                                System.out.println("error en paréntesis");
+                                return false;
+                            }
+                        }else{
+                            if(goodOperators(posAsignaciones)){
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
         
-
+        return false;
     }
 
     private static boolean isDeclaracion(ArrayList<Token> posDeclaraciones) {
-        System.out.println("Hello");
+        //System.out.println("Hello");
         
-        if(posDeclaraciones.size()>=1){
-            System.out.println("Size: " + posDeclaraciones.size());
+        if(posDeclaraciones.size()>=1 && posDeclaraciones.size()==3){
+            //System.out.println("Size: " + posDeclaraciones.size());
             if(posDeclaraciones.get(0).getValue().equals("entero") || posDeclaraciones.get(0).getValue().equals("real")  || posDeclaraciones.get(0).getValue().equals("logico")){
                 if(posDeclaraciones.get(1).getId().equals("IDENTIFICADOR")){
                     return true;
@@ -259,6 +296,53 @@ public class SyntacticAnalizer {
             }
         }
         return false;
+    }
+    
+    private static boolean parantesisBalanceados(ArrayList<Token> posAsignaciones){
+         
+        Stack<String> stack = new Stack<String>();
+        
+        for(int i = 2; i<posAsignaciones.size(); i++){
+            if(posAsignaciones.get(i).getValue().equals("(")){
+                stack.push( "(" );
+            }else if (posAsignaciones.get(i).getValue().equals(")")){
+                if(stack.isEmpty()){
+                    return false;
+                }
+                stack.pop();
+            }
+        
+        }
+        
+        if(stack.isEmpty()){
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean goodOperators(ArrayList<Token> posAsignaciones) {
+        
+        
+        for(int i = 0; i<posAsignaciones.size(); i++){
+            if(posAsignaciones.get(i).getValue().equals("+") || posAsignaciones.get(i).getValue().equals("-") || posAsignaciones.get(i).getValue().equals("*") || posAsignaciones.get(i).getValue().equals("/") ||
+               posAsignaciones.get(i).getValue().equals("^") || posAsignaciones.get(i).getValue().equals(">") || posAsignaciones.get(i).getValue().equals("<") ||
+               posAsignaciones.get(i).getValue().equals("&") || posAsignaciones.get(i).getValue().equals("|") || posAsignaciones.get(i).getValue().equals("==")){
+//                System.out.println("el signo previo es es " +  posAsignaciones.get(i-1).getValue());
+//               System.out.println("el signo que lee es " +  posAsignaciones.get(i).getValue());
+//               System.out.println("el signo que sigue es " +  posAsignaciones.get(i+1).getValue());
+               if((i+1)<posAsignaciones.size()){
+                   if((posAsignaciones.get(i-1).getId().equals("IDENTIFICADOR") || posAsignaciones.get(i-1).getValue().equals(")") || posAsignaciones.get(i-1).getId().equals("REAL") || posAsignaciones.get(i-1).getId().equals("ENTERO")) && 
+                      (posAsignaciones.get(i+1).getId().equals("IDENTIFICADOR") || posAsignaciones.get(i+1).getValue().equals("(") || posAsignaciones.get(i+1).getId().equals("REAL") || posAsignaciones.get(i+1).getId().equals("ENTERO"))){
+                       //System.out.println("todo cool");
+                   }else{
+                       return false;
+                   }
+               }
+            }
+        }
+        
+        return true;
     }
 
 }
