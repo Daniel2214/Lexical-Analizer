@@ -80,9 +80,91 @@ public class SyntacticAnalizer {
 
                     if(mainAppears == false ){
                         mainAppears = true;
+                        
+                        int length = 0;
+                        ArrayList<Token> intermediarioPrincipal = new ArrayList<Token>();
+                        while(tokensTable.get(i).getLineNum() == line){
+                            intermediarioPrincipal.add(tokensTable.get(i));
+                            i++;
+                            length++;
+                        }
+                        
+                        
+                        if(length==4){
+                            if(isPrincipal(intermediarioPrincipal)){
+                                System.out.println("Header de principal correcto");
+                                
+                                //Revisar declaraciones
+                                while (tokensTable.get(i).getValue().equals("entero") || tokensTable.get(i).getValue().equals("real") || tokensTable.get(i).getValue().equals("logico")){
+                                    line ++;
+                                    while(tokensTable.get(i).getLineNum() == line){
+                                        posDeclaraciones.add(tokensTable.get(i));
+                                        i++;
+                                    }
+                                    if(isDeclaracion(posDeclaraciones)){
+                                         System.out.println("Declaración correcta");
+                                         declarationExist = true;
+                                    }else{
+                                         System.out.println("Error en declaracion en la linea " + line + ", en el termino " + (i-1) );
+                                    }
+                                    posDeclaraciones.clear();
+                                }
+                               
+                                
+ //                               System.out.println(" i al terminar declaracion es " + i);
+                                
+                                
+                                //Revisar asignaciones
+                                while (tokensTable.get(i).getId().equals("IDENTIFICADOR")){
+                                    if(declarationExist == false){
+                                        declarationError = true;
+                                        System.out.println("Error: asignacion antes de declarar en la linea " + line + ", en el termino " + (i-1));
+                                        while(tokensTable.get(i).getLineNum() == line){
+                                            i++;
+                                        }
+                                        i--;
+                                    }else{
+                                        line ++;
+                                        //System.out.println("HADOUKEN!!!");
+                                        while(tokensTable.get(i).getLineNum() == line){
+                                            posAsignacion.add(tokensTable.get(i));
+                                            i++;
+                                        }
+                                        
+                                        if(isAsignacion(posAsignacion)){
+                                            System.out.println("ASIGNACION!!!");
+                                        }else{
+                                            System.out.println("Error en linea " + line + ", termino " + i);
+                                        }
+                                        
+                                    }
+                                    posAsignacion.clear();
+                                }
+                                if(declarationError == false){
+                                    i--;
+                                }
+                                
+                                if(tokensTable.get(i+1).getValue().equals("regresa")){
+                                   
+                                        System.out.println("Error en linea " + line + ", return en principal");
+                                    
+                                    i++;
+                                }
+                                
+                                
+                            }else{
+                                System.out.println("header de principal incorrecto linea " + line + ", caracter " + i);
+                            }
+                        }else{
+                        
+                        }
+
+                        
                     }else{
                         System.out.println("Error en la linea " + line + ", principal ya se había declarado");
                     }
+                    
+                    
 
                     
                 }else if (tokensTable.get(i).getValue().equals("entero") || tokensTable.get(i).getValue().equals("real") || tokensTable.get(i).getValue().equals("logico")){
@@ -159,13 +241,20 @@ public class SyntacticAnalizer {
                                     i--;
                                 }
                                 
-                                
+                                if(tokensTable.get(i+1).getValue().equals("regresa")){
+                                    if(!tokensTable.get(i+2).getId().equals("IDENTIFICADOR")){
+                                        System.out.println("Error en linea " + line + ", return no regresa identificador");
+                                    }
+                                    i++;
+                                }
                                 
                                 
                                
                             }else{
                                 System.out.println("Error, function is declared after main. Line: " + line + ", Character: " + i);
                             }
+                        }else{
+                            System.out.println("No es correcta la declaración de la funcion en la linea " + line);
                         }
                     }
                 }
@@ -343,6 +432,21 @@ public class SyntacticAnalizer {
         }
         
         return true;
+    }
+
+    private static boolean isPrincipal(ArrayList<Token> intermediarioPrincipal) {
+        
+        if(intermediarioPrincipal.get(0).getValue().equals("principal")){
+            if(intermediarioPrincipal.get(1).getValue().equals("(")){
+               if(intermediarioPrincipal.get(2).getValue().equals(")")){
+                    if(intermediarioPrincipal.get(3).getValue().equals("{")){
+                        return true;
+                    }
+                }     
+            }
+        }
+        
+        return false;
     }
 
 }
